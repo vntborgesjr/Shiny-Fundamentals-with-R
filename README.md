@@ -1,2 +1,2 @@
-# Shiny-Fundamentals-with-R
- 
+# Shiny Fundamentals with R
+ **Shiny Fundamentals with R** é uma *Skill Track* oferecida pela [DataCamp](https://learn.datacamp.com/skill-tracks/shiny-fundamentals-with-r?version=3) que ensina as habilidades básicas para a construção de aplicações interativas para web sem a necessidade do uso de outras linguagens de programação. Utilizando Shiny é possível compartilhar as análises como dashboards e visualizações interativas. Shiny é uma ferramenta fundamental para o aperfeiçoamento das habilidades de descoberta e da capacidade de comunicação visual com um público não-técnico - uma habilidade indispensável para qualquer analista ou cientísta de dados!
