@@ -96,10 +96,12 @@ shinyApp(ui = ui, server = server)
 
 # Update output (server)
 library(tidyverse)
-babynames <- readRDS("Datasets/babynames.rds")
+babynames <- read_csv("Datasets/babynames.csv")
 babynames <- babynames %>% 
-  group_by(name) %>% 
-  mutate(prop = number/sum(number))
+  group_by(Name) %>% 
+  mutate(prop = Count/sum(Count)) %>% 
+  arrange(Year, Name, prop)
+head(babynames)
 
 ui <- fluidPage(
   titlePanel("Baby Name Explorer"),
@@ -111,8 +113,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   output$trend <- renderPlot({
     # CODE BELOW: Update to display a line plot of the input name
-    ggplot(data = subset(babynames, name == input$name)) + 
-      geom_line(aes(x = year, y = prop))
+    ggplot(data = subset(babynames, Name == input$name)) + 
+      geom_line(aes(x = Year, y = prop, color = Gender))
   })
 }
 shinyApp(ui = ui, server = server)
