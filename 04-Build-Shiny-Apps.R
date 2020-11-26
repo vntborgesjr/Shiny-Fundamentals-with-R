@@ -4,6 +4,8 @@
 # VNTBJR
 # ------------------------------------------------
 # 
+# Build an Alien Sightings Dashboard ------------------------------------------------
+
 # Load packages
 library(tidyverse)
 library(shiny)
@@ -73,3 +75,6 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
+
+# Exploring the 2014 Mental Health in Tech Survey ------------------------------------------------
+install.packages("shinyWidgets")
