@@ -77,4 +77,142 @@ server <- function(input, output) {
 shinyApp(ui, server)
 
 # Exploring the 2014 Mental Health in Tech Survey ------------------------------------------------
-install.packages("shinyWidgets")
+# Load packages
+library(shiny)
+library(tidyverse)
+library(shinyWidgets)
+
+# Load data
+mental_health_survey <- read_csv("Datasets/mental_health_survey_edited.csv")
+
+# Validate that a user made a selection
+
+ui <- fluidPage(
+  # CODE BELOW: Add an appropriate title
+  titlePanel("2014 Mental Health in Tech Survey"),
+  sidebarPanel(
+    sliderTextInput(
+      inputId = "work_interfere",
+      label = "If you have a mental health condition, do you feel that it interferes with your work?", 
+      grid = TRUE,
+      force_edges = TRUE,
+      choices = c("Never", "Rarely", "Sometimes", "Often")
+    ),
+    # CODE BELOW: Add a checkboxGroupInput
+    checkboxGroupInput(
+    inputId = "mental_health_consequence", 
+    label = "Do you fell that discussing a mental health issue with your
+    employer woukd have negative consequenses?", 
+    choices = c("Maybe", "Yes", "No"), 
+    selected = "Maybe"),
+    # CODE BELOW: Add a pickerInput
+    pickerInput(
+    inputId = "mental_vs_physical", 
+    label = "Do you fell that your employer takes mental health as 
+    seriouly as physical health?",
+    choices = c("Don't know", "No", "Yes"), 
+    multiple = TRUE)
+    ),
+  mainPanel(
+    # CODE BELOW: Display the output
+    plotOutput(outputId = "age")
+  )
+)
+
+server <- function(input, output, session) {
+  # CODE BELOW: Build a histogram of the age of respondents
+  # Filtered by the two inputs
+  output$age <- renderPlot({
+    # MODIFY CODE BELOW: Add validation that user selected a 3rd input
+    validate(
+      need(input$mental_vs_physical != "", "Be sure to select a choice
+           for mental versus physical health question.")
+    )
+    mental_health_survey %>% 
+      filter(work_interfere == input$work_interfere, 
+             mental_health_consequence %in% input$mental_health_consequence,
+             mental_vs_physical %in% input$mental_vs_physical) %>% 
+      ggplot(mapping = aes(x = Age)) +
+      geom_histogram()
+  })
+
+}
+
+shinyApp(ui, server)
+
+# Explore cuisines  -------------------------------------------
+# Load packages
+library(d3wordcloud)
+
+# Load data
+recipes <- readRDS('Datasets/recipes.rds')
+# need to transform the list into a data frame
+
+ui <- fluidPage(
+  titlePanel('Explore Cuisines'),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(
+        inputId = 'cuisine', 
+        label = 'Select Cuisine', 
+        choices = unique(recipes$cuisine)
+      ),
+      sliderInput(
+        inputId = 'nb_ingerdients',
+        label = 'Select No. of ingredients',
+        min = 5,
+        max = 100,
+        value = 20
+      )
+      ),
+      mainPanel(
+        tabsetPanel(
+          tabPanel(
+            title = 'Word Cloud',
+            d3wordcloudOutput('wc_ingredients')),
+          tabPanel('Plot', 
+                   plotly::plotlyOutput('plot_top_ingredients')),
+          tabPanel('Table',
+                   DT::DTOutput('dt_top_ingredients'))
+        )
+      )
+    )
+  )
+
+server <- function(input, output, session) {
+  # Compute TFIDF
+  recipes_enriched <- recipes %>% 
+    count(cuisine, ingredient, name = 'nb_recipes') %>% 
+    tidytext::bind_tf_idf(ingredient, cuisine, nb_recipes)
+  # Add a reactive expression
+  rval_top_ingredients <- reactive({
+    recipes_enriched %>% 
+      filter(cuisine == input$cuisine) %>% 
+      arrange(desc(tf_idf)) %>% 
+      head(input$nb_ingredients) %>% 
+      mutate(ingredient = forcats::fct_reorder(ingredient, tf_idf))
+  }) 
+  # Add output: interactive table
+  output$dt_top_ingredients <- DT::renderDT({
+     recipes %>% 
+       filter(cuisine == input$cuisine) %>% 
+       count(ingredient, name = 'nb_recipes') %>% 
+       arrange(desc(nb_recipes)) %>% 
+       head(input$nb_ingredients)
+   })
+  # Add output: interactive plot 
+  output$plot_top_ingredients <- plotly::renderPlotly({
+    rval_top_ingredients() %>% 
+      arrange(desc(tf_idf)) %>% 
+      ggplot(aes(x = ingredient, y = tf_idf, )) +
+      geom_col() +
+      coord_flip()
+  })
+  # Add output: word cloud
+  output$wc_ingredients <- renderD3wordcloud({
+    d <- rval_top_ingredients()
+    d3wordcloud(d$ingredient, d$nb_recipes, tooltip = TRUE)
+  })
+}
+
+shinyApp(ui = ui, server = server)
