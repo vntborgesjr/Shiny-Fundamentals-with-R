@@ -1,5 +1,5 @@
 # --------------------------------------------------- 
-# Case Studies: Building Web Applications with Shiny in R: Shiny review 
+# Case Studies: Building Web Applications with Shiny in R - Shiny review 
 # 01 dez 2020 
 # VNTBJR 
 # --------------------------------------------------- 
