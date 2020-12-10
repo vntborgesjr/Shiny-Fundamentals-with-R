@@ -29,6 +29,9 @@ Column {data-width=200 .sidebar}
 sliderInput("duration_slider", label = "Select maximum trip duration to display (in minutes):",
             min = 0, max = 120, value = 15, step = 5, dragRange = TRUE)
 
+sliderInput("duration_bin", label = "Select # of minutes to bin trip durations:",
+           min = 1, max = 15, value = 1, step = 1)
+
 show_trips_df <- reactive({
 
   trips_df %>%
@@ -93,21 +96,14 @@ renderPlot({show_trips_df() %>%
 
 ```{r}
 
-fillCol(height = 600, flex = c(NA, 1), 
-   inputPanel(
-     sliderInput("duration_bin", label = "Select # of minutes to bin trip durations:",
-           min = 1, max = 15, value = 1, step = 1)
-   ), 
-   plotOutput("duration_bin", height = "100%")
- )
- output$duration_bin <- renderPlot({
-   trips_df %>% 
+renderPlot({show_trips_df() %>%
   mutate(`Trip Duration (min)` = duration_sec / 60) %>%
   ggplot(aes(x = `Trip Duration (min)`)) +
   theme_bw() +
   geom_histogram(binwidth = input$duration_bin) +
   ylab('# Trips')
- })
+})
+
 
 ```
 
